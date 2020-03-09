@@ -21,19 +21,20 @@ type Project struct {
 }
 
 type Page struct {
-	ID          int64
-	PID         int64
-	Title       string
-	Description string
-	Content     string
-	ProjectID   int64
-	UserID      int64
-	Type        int64
-	Status      int64
-	HistoryID   int64
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	SortLevel   int64
+	ID                 int64
+	PID                int64
+	Title              string
+	Description        string
+	Content            string
+	ProjectID          int64
+	UserID             int64
+	LastModifiedUserID int64
+	Type               int64
+	Status             int64
+	HistoryID          int64
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	SortLevel          int64
 }
 
 type PageHistory struct {
@@ -64,7 +65,7 @@ type Attachment struct {
 	UpdatedAt time.Time
 }
 
-func insert(db *sql.DB, sqlStat string, params []interface{}) (int64, error) {
+func insert(db *sql.Tx, sqlStat string, params []interface{}) (int64, error) {
 	//log.Printf("sql -> %s", fmt.Sprintf(""+strings.ReplaceAll(sqlStat, "?", "%v"), params...))
 	stmt, err := db.Prepare(sqlStat)
 	if err != nil {

@@ -48,6 +48,33 @@ func main() {
 		panic(err)
 	}
 
+	tx, err := wizardDB.Begin()
+	if err != nil {
+		panic(err)
+	}
+
+	(func() {
+		defer func() {
+			if err := recover(); err != nil {
+				_ = tx.Rollback()
+				log.Printf("migrate to wizard failed: %v", err)
+			}
+		}()
+
+		if err := migrate(showdocDB, tx); err != nil {
+			panic(err)
+		}
+
+		if err := tx.Commit(); err != nil {
+			panic(err)
+		}
+	})()
+
+	log.Println("migration finished")
+}
+
+// migrate 执行迁移
+func migrate(showdocDB *sql.DB, wizardDB *sql.Tx) error {
 	showdocItemModel := showdoc.NewItemModel(showdocDB)
 	showdocPageModel := showdoc.NewPageModel(showdocDB)
 	showdocCatalogModel := showdoc.NewCatalogModel(showdocDB)
@@ -57,7 +84,7 @@ func main() {
 
 	items, err := showdocItemModel.GetItems()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// 遍历项目
@@ -75,13 +102,13 @@ func main() {
 			CatalogId:   0,
 		})
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		// 查询项目下的目录树
 		tree, err := showdocCatalogModel.GetCatalogTreeInItem(item.ItemId)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		// 遍历目录树
@@ -92,18 +119,19 @@ func main() {
 			// 创建目录（在Wizard中作为Markdown文档）
 			if id > 0 {
 				catalogID, err = wizardPageModel.CreatePage(wizard.Page{
-					PID:         pid,
-					Title:       name,
-					Description: "",
-					Content:     "",
-					ProjectID:   projectID,
-					UserID:      importUserID,
-					Type:        wizard.TypeMarkdown,
-					Status:      wizard.StatusNormal,
-					HistoryID:   0,
-					CreatedAt:   time.Now(),
-					UpdatedAt:   time.Now(),
-					SortLevel:   0,
+					PID:                pid,
+					Title:              name,
+					Description:        "",
+					Content:            "",
+					ProjectID:          projectID,
+					UserID:             importUserID,
+					LastModifiedUserID: importUserID,
+					Type:               wizard.TypeMarkdown,
+					Status:             wizard.StatusNormal,
+					HistoryID:          0,
+					CreatedAt:          time.Now(),
+					UpdatedAt:          time.Now(),
+					SortLevel:          0,
 				})
 				if err != nil {
 					panic(err)
@@ -120,18 +148,19 @@ func main() {
 			for _, page := range pages {
 				log.Printf("%s      - [%s]", strings.Repeat("     ", int(level)), page.PageTitle)
 				pageID, err := wizardPageModel.CreatePage(wizard.Page{
-					PID:         catalogID,
-					Title:       page.PageTitle,
-					Description: page.PageComments,
-					Content:     preProcess(page.PageContent, replaceUrl, replaceUrlTo),
-					ProjectID:   projectID,
-					UserID:      importUserID,
-					Type:        wizard.TypeMarkdown,
-					Status:      wizard.StatusNormal,
-					HistoryID:   0,
-					CreatedAt:   time.Unix(page.AddTime, 0),
-					UpdatedAt:   time.Unix(page.AddTime, 0),
-					SortLevel:   page.SNumber,
+					PID:                catalogID,
+					Title:              page.PageTitle,
+					Description:        page.PageComments,
+					Content:            preProcess(page.PageContent, replaceUrl, replaceUrlTo),
+					ProjectID:          projectID,
+					UserID:             importUserID,
+					LastModifiedUserID: importUserID,
+					Type:               wizard.TypeMarkdown,
+					Status:             wizard.StatusNormal,
+					HistoryID:          0,
+					CreatedAt:          time.Unix(page.AddTime, 0),
+					UpdatedAt:          time.Unix(page.AddTime, 0),
+					SortLevel:          page.SNumber,
 				})
 				if err != nil {
 					panic(err)
@@ -220,6 +249,7 @@ func main() {
 		}, 0)
 	}
 
+	return nil
 }
 
 // traverseCatalogTree 遍历目录树

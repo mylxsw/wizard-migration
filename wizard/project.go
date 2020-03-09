@@ -8,10 +8,10 @@ import (
 const ProjectFields = "id, name, description, visibility, user_id, created_at, updated_at, deleted_at, sort_level, catalog_id"
 
 type ProjectModel struct {
-	db *sql.DB
+	db *sql.Tx
 }
 
-func NewProjectModel(db *sql.DB) *ProjectModel {
+func NewProjectModel(db *sql.Tx) *ProjectModel {
 	return &ProjectModel{db: db}
 }
 

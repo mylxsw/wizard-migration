@@ -11,10 +11,10 @@ const AttachmentFields = "id, name, path, user_id, page_id, project_id, created_
 const PageHistoryFields = "id, page_id, pid, title, description, content, project_id, type, status, user_id, operator_id, created_at, updated_at, sort_level"
 
 type PageModel struct {
-	db *sql.DB
+	db *sql.Tx
 }
 
-func NewPageModel(db *sql.DB) *PageModel {
+func NewPageModel(db *sql.Tx) *PageModel {
 	return &PageModel{db: db}
 }
 
@@ -32,7 +32,7 @@ func (m *PageModel) CreatePage(page Page) (int64, error) {
 		page.UserID,
 		page.Type,
 		page.Status,
-		0,
+		page.LastModifiedUserID,
 		page.HistoryID,
 		nil,
 		page.CreatedAt,
