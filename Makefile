@@ -10,9 +10,9 @@ build:
 	go build -race -ldflags $(LDFLAGS) -o build/debug/wizard-migration main.go
 
 build-release:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags $(LDFLAGS) -o build/release/wizard-migration-darwin main.go
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags $(LDFLAGS) -o build/release/wizard-migration.exe main.go
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags $(LDFLAGS) -o build/release/wizard-migration-linux main.go
+	mkdir -p build/release/ && cd build/release/
+	# https://github.com/karalabe/xgo
+	xgo -ldflags="$(LDFLAGS)"-targets=linux/amd64,windows/amd64,darwin/amd64 github.com/mylxsw/wizard-migration
 
 clean:
 	rm -fr build/debug/* build/release/*
