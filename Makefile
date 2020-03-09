@@ -12,7 +12,7 @@ build:
 build-release:
 	mkdir -p build/release/ && cd build/release/
 	# https://github.com/karalabe/xgo
-	xgo -ldflags="$(LDFLAGS)"-targets=linux/amd64,windows/amd64,darwin/amd64 github.com/mylxsw/wizard-migration
+	xgo -ldflags=$(LDFLAGS) -targets=linux/amd64,windows/amd64,darwin/amd64 github.com/mylxsw/wizard-migration
 
 clean:
 	rm -fr build/debug/* build/release/*
