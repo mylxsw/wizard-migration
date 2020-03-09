@@ -10,9 +10,8 @@ build:
 	go build -race -ldflags $(LDFLAGS) -o build/debug/wizard-migration main.go
 
 build-release:
-	mkdir -p build/release/ && cd build/release/
 	# https://github.com/karalabe/xgo
-	xgo -ldflags=$(LDFLAGS) -targets=linux/amd64,windows/amd64,darwin/amd64 github.com/mylxsw/wizard-migration
+	mkdir -p build/release/ && cd build/release/ && xgo -ldflags=$(LDFLAGS) -targets=linux/amd64,windows/amd64,darwin/amd64 github.com/mylxsw/wizard-migration
 
 clean:
 	rm -fr build/debug/* build/release/*
