@@ -59,3 +59,14 @@ type PageHistory struct {
 	AddTime        int64
 	PageComments   string
 }
+
+type UploadFile struct {
+	FileID      int64
+	DisplayName string
+	FileType    string
+	FileSize    int64
+	PageID      int64
+	ItemID      int64
+	RealURL     string
+	AddTime     int64
+}

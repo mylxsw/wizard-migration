@@ -3,7 +3,6 @@ package wizard
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 )
 
 const ProjectFields = "id, name, description, visibility, user_id, created_at, updated_at, deleted_at, sort_level, catalog_id"
@@ -16,8 +15,9 @@ func NewProjectModel(db *sql.DB) *ProjectModel {
 	return &ProjectModel{db: db}
 }
 
+// CreateProject 新增项目
 func (m *ProjectModel) CreateProject(project Project) (int64, error) {
-	sqlStat := fmt.Sprintf("INSERT INTO wz_projects (%s) VALUES (%s)", ProjectFields, strings.Repeat("?, ", len(strings.Split(ProjectFields, ","))-1)+"?")
+	sqlStat := fmt.Sprintf("INSERT INTO wz_projects (%s) VALUES (%s)", ProjectFields, placeholders(ProjectFields))
 
 	return insert(m.db, sqlStat, []interface{}{
 		project.ID,

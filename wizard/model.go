@@ -2,8 +2,12 @@ package wizard
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 )
+
+const TypeMarkdown int64 = 1
+const StatusNormal int64 = 1
 
 type Project struct {
 	ID          int64
@@ -49,6 +53,17 @@ type PageHistory struct {
 	SortLevel   int64
 }
 
+type Attachment struct {
+	ID        int64
+	Name      string
+	Path      string
+	UserID    int64
+	PageID    int64
+	ProjectID int64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 func insert(db *sql.DB, sqlStat string, params []interface{}) (int64, error) {
 	//log.Printf("sql -> %s", fmt.Sprintf(""+strings.ReplaceAll(sqlStat, "?", "%v"), params...))
 	stmt, err := db.Prepare(sqlStat)
@@ -62,4 +77,8 @@ func insert(db *sql.DB, sqlStat string, params []interface{}) (int64, error) {
 	}
 
 	return result.LastInsertId()
+}
+
+func placeholders(fields string) string {
+	return strings.Repeat("?, ", len(strings.Split(fields, ","))-1) + "?"
 }
