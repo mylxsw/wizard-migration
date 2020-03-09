@@ -16,7 +16,6 @@ func NewItemModel(db *sql.DB) *ItemModel {
 	return &ItemModel{db: db}
 }
 
-// GetItems 查询项目列表
 func (m *ItemModel) GetItems() ([]Item, error) {
 	rows, err := m.db.Query(fmt.Sprintf("SELECT %s FROM item", ItemFields))
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 	"github.com/mylxsw/wizard-migration/wizard"
 	"io"
 	"log"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -31,7 +32,7 @@ func main() {
 	flag.StringVar(&showdocDBConn, "showdoc_db", "/Users/mylxsw/codes/github/showdoc/Sqlite/showdoc.db.php", "ShowDoc 数据库文件路径")
 	flag.StringVar(&wizardDBConn, "wizard_db", "root:@tcp(127.0.0.1:3306)/wizard_migration", "Wizard 数据库连接地址")
 	flag.Int64Var(&importUserID, "import_user_id", 1, "导入后在 Wizard 中使用的 UID")
-	flag.StringVar(&replaceUrl, "replace_url", "http://showdoc.local.yunsom.space/server/../Public/Uploads/", "替换地址，用于替换正文中的图片地址")
+	flag.StringVar(&replaceUrl, "replace_url", "http://showdoc.local.yunsom.space", "替换地址，用于替换正文中的图片地址")
 	flag.StringVar(&replaceUrlTo, "replace_url_to", "/storage/showdoc/", "替换地址，用于替换正文中的图片地址")
 
 	flag.Parse()
@@ -42,11 +43,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer showdocDB.Close()
 
 	wizardDB, err := sql.Open("mysql", fmt.Sprintf("%s?parseTime=true", wizardDBConn))
 	if err != nil {
 		panic(err)
 	}
+	defer wizardDB.Close()
 
 	tx, err := wizardDB.Begin()
 	if err != nil {
@@ -265,7 +268,7 @@ func traverseCatalogTree(tree showdoc.CatalogTree, callback func(id int64, name 
 
 // preProcess 预处理内容（替换 url 地址)
 func preProcess(content string, replaceUrl string, replaceUrlTo string) string {
-	return strings.ReplaceAll(content, replaceUrl, replaceUrlTo)
+	return strings.ReplaceAll(content, filepath.Join(replaceUrl, "/server/../Public/Uploads/"), replaceUrlTo)
 }
 
 // stringDecode 字符串解码 zlib(base64)
